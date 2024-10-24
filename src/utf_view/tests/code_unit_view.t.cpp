@@ -26,8 +26,41 @@ constexpr bool smoke_test() {
   return true;
 }
 
+template <typename View>
+constexpr bool every_operator_test_impl(View v) {
+  auto char8_t_view{v | as_char8_t};
+  auto it{char8_t_view.begin()};
+  auto sent{char8_t_view.end()};
+  if (it == sent) {
+    return false;
+  }
+  for (auto const i : std::views::iota(std::size_t{0}, v.size())) {
+    ++it;
+  }
+  if (it != sent) {
+    return false;
+  }
+  for (auto const i : std::views::iota(std::size_t{0}, v.size())) {
+    --it;
+  }
+  if (it == sent) {
+    return false;
+  }
+  return true;
+}
+
+constexpr bool every_operator_test() {
+  if (!every_operator_test_impl(std::string_view{"012345789"})) {
+    return false;
+  }
+  return true;
+}
+
 CONSTEXPR_UNLESS_MSVC bool code_unit_view_test() {
   if (!smoke_test()) {
+    return false;
+  }
+  if (!every_operator_test()) {
     return false;
   }
   return true;
