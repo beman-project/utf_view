@@ -17,7 +17,7 @@ target_include_directories(
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_LOWER_PROJECT_NAME}> # <prefix>/include/utf_view
 )
 
-target_link_libraries(utf_view INTERFACE boost_stl_interfaces)
+target_link_libraries(utf_view INTERFACE beman::iterator_interface)
 
 install(
   TARGETS utf_view
@@ -31,6 +31,6 @@ install(
   PATTERN "*.hpp")
 
 # Tests
-if(BUILD_TESTING)
-  add_subdirectory(tests)
+if(UTF_VIEW_BUILD_TESTING)
+    add_subdirectory(tests)
 endif()
