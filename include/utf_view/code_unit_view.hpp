@@ -8,14 +8,45 @@
 #ifndef UTF_VIEW_CODE_UNIT_VIEW_HPP
 #define UTF_VIEW_CODE_UNIT_VIEW_HPP
 
+#include <beman/iterator_interface/iterator_interface.hpp>
+
 #include <utf_view/detail/concepts.hpp>
-#include <boost/stl_interfaces/iterator_interface.hpp>
+
 #include <iterator>
 #include <ranges>
 #include <type_traits>
 #include <utility>
 
 namespace utf_view {
+
+  namespace detail {
+
+    template <typename T>
+        requires std::is_object_v<T>
+    struct proxy_arrow_result
+    {
+      constexpr proxy_arrow_result(T const& value) noexcept(noexcept(T(value)))
+          : value_(value) { }
+      constexpr proxy_arrow_result(T&& value) noexcept(noexcept(T(std::move(value))))
+          : value_(std::move(value)) { }
+
+      constexpr T const* operator->() const noexcept {
+        return &value_;
+      }
+      constexpr T* operator->() noexcept {
+        return &value_;
+      }
+
+    private:
+      T value_;
+    };
+
+    template <typename IteratorConcept, typename ValueType,
+              typename Reference = ValueType, typename DifferenceType = std::ptrdiff_t>
+    using proxy_iterator_interface =
+      beman::iterator_interface::iterator_interface<IteratorConcept, ValueType, Reference,
+                           proxy_arrow_result<Reference>, DifferenceType>;
+  }
 
 /* PAPER: namespace std::uc { */
 
@@ -114,7 +145,7 @@ public:
 template <exposition_only_convertible_to_charN_t_view<char8_t> V>
 template <bool Const>
 class as_char8_t_view<V>::exposition_only_iterator
-    : public boost::stl_interfaces::proxy_iterator_interface<
+    : public detail::proxy_iterator_interface<
           exposition_only_iterator_to_tag_t<
               std::ranges::iterator_t<exposition_only_maybe_const<Const, V>>>,
           char8_t> {
@@ -125,7 +156,7 @@ private:
   using exposition_only_iterator_type = std::ranges::iterator_t<
       exposition_only_maybe_const<Const, V>>; // @*exposition only*@
 
-  friend boost::stl_interfaces::access;
+  friend beman::iterator_interface::iterator_interface_access;
 
   constexpr exposition_only_iterator_type& base_reference() noexcept {
     return it_;
@@ -277,7 +308,7 @@ public:
 template <exposition_only_convertible_to_charN_t_view<char16_t> V>
 template <bool Const>
 class as_char16_t_view<V>::exposition_only_iterator
-    : public boost::stl_interfaces::proxy_iterator_interface<
+    : public detail::proxy_iterator_interface<
           exposition_only_iterator_to_tag_t<
               std::ranges::iterator_t<exposition_only_maybe_const<Const, V>>>,
           char16_t> {
@@ -288,7 +319,7 @@ private:
   using exposition_only_iterator_type = std::ranges::iterator_t<
       exposition_only_maybe_const<Const, V>>; // @*exposition only*@
 
-  friend boost::stl_interfaces::access;
+  friend beman::iterator_interface::iterator_interface_access;
 
   constexpr exposition_only_iterator_type& base_reference() noexcept {
     return it_;
@@ -440,7 +471,7 @@ public:
 template <exposition_only_convertible_to_charN_t_view<char32_t> V>
 template <bool Const>
 class as_char32_t_view<V>::exposition_only_iterator
-    : public boost::stl_interfaces::proxy_iterator_interface<
+    : public detail::proxy_iterator_interface<
           exposition_only_iterator_to_tag_t<
               std::ranges::iterator_t<exposition_only_maybe_const<Const, V>>>,
           char32_t> {
@@ -451,7 +482,7 @@ private:
   using exposition_only_iterator_type = std::ranges::iterator_t<
       exposition_only_maybe_const<Const, V>>; // @*exposition only*@
 
-  friend boost::stl_interfaces::access;
+  friend beman::iterator_interface::iterator_interface_access;
 
   constexpr exposition_only_iterator_type& base_reference() noexcept {
     return it_;

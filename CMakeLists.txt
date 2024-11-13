@@ -8,25 +8,35 @@
 cmake_minimum_required(VERSION 3.27)
 project(utf_view CXX)
 
-if (BUILD_TESTING)
-  include(CTest)
+include(FetchContent)
+
+option(
+    UTF_VIEW_BUILD_TESTING
+    "Enable building tests and test infrastructure. Default: ON. Values: { ON, OFF }."
+    ${PROJECT_IS_TOP_LEVEL}
+)
+
+option(
+    UTF_VIEW_BUILD_PAPER
+    "Enable building paper. Default: OFF. Values: { ON, OFF }."
+    OFF
+)
+
+if (UTF_VIEW_BUILD_TESTING)
+    enable_testing()
 endif()
 
-if (NOT TARGET boost_config)
-  add_subdirectory(deps/config)
-endif()
+FetchContent_Declare(
+    beman.iterator_interface
+    GIT_REPOSITORY https://github.com/beman-project/iterator_interface.git
+    GIT_TAG 7369d10dd207175b6d4b420f38391ab6b26759c6
+    EXCLUDE_FROM_ALL
+)
 
-if (NOT TARGET boost_assert)
-  add_subdirectory(deps/assert)
-endif()
-
-if (NOT TARGET boost_stl_interfaces)
-  add_definitions(-DBOOST_STL_INTERFACES_ENABLE_DEDUCED_THIS)
-  add_subdirectory(deps/stl_interfaces)
-else()
-  message(FATAL_ERROR "Conflicting dependency: boost_stl_interfaces already exists, but we need our own fork")
-endif()
+FetchContent_MakeAvailable(beman.iterator_interface)
 
 add_subdirectory(src/utf_view)
 
-add_subdirectory(paper)
+if (UTF_VIEW_BUILD_PAPER)
+    add_subdirectory(paper)
+endif()
